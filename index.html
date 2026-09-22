@@ -213,8 +213,10 @@ const viewport=document.getElementById('viewport');
 const thumbs=[...document.querySelectorAll('.thumb')];
 let cur=0;
 let autoTimer=null;
+let videoTimer=null;
 let isMusicPlaying=false;
 function go(i, source='nav'){
+  if(videoTimer) clearTimeout(videoTimer);
   cur=((i%${c.length})+${c.length})%${c.length};
   const el=track.querySelector('[data-index="'+cur+'"]');
   if(el){ try{ el.scrollIntoView({behavior: source==='auto'?'smooth':'smooth', block:'nearest', inline:'start'}); }catch{ track.scrollTo({left: el.offsetLeft, behavior:'smooth'}); } }
@@ -226,6 +228,9 @@ function go(i, source='nav'){
   if(activeVid){
     activeVid.play().catch(()=>{});
     activeVid.onended=()=>{ go(cur+1,'auto'); };
+    videoTimer=setTimeout(()=>{
+      if(activeVid===track.querySelector('[data-index="'+cur+'"] video')) go(cur+1,'auto');
+    },15000);
   }
 }
 function startAuto(ms=3500){
@@ -237,7 +242,12 @@ function startAuto(ms=3500){
     go(cur+1,'auto');
   }, ms);
 }
-function stopAuto(){ if(autoTimer) clearInterval(autoTimer); autoTimer=null; }
+function stopAuto(){
+  if(autoTimer) clearInterval(autoTimer);
+  if(videoTimer) clearTimeout(videoTimer);
+  autoTimer=null;
+  videoTimer=null;
+}
 go(0); startAuto(3500);
 document.getElementById('prev').onclick=()=>{go(cur-1); startAuto(3500);};
 document.getElementById('next').onclick=()=>{go(cur+1); startAuto(3500);};
